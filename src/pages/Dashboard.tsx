@@ -23,6 +23,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/PageHeader'
 import { CaseCard } from '@/components/CaseCard'
+import { DailyMessage } from '@/components/DailyMessage'
 import { LoadingScreen } from '@/components/LoadingScreen'
 import { useCrm } from '@/contexts/CrmContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -92,6 +93,8 @@ export default function Dashboard() {
           </Button>
         }
       />
+
+      <DailyMessage />
 
       {error && (
         <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">

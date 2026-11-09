@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, Clipboard, Lightbulb, MessageCircle, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/PageHeader'
+import { DailyMessage } from '@/components/DailyMessage'
 import { useCrm } from '@/contexts/CrmContext'
 import { useToast } from '@/hooks/use-toast'
 
@@ -35,6 +36,8 @@ export default function Templates() {
         title="Modelos de mensagem"
         description="Copie as mensagens da diretriz para o WhatsApp ou o Instagram e personalize os trechos entre colchetes antes de enviar ao cliente."
       />
+
+      <DailyMessage />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:col-span-2">
