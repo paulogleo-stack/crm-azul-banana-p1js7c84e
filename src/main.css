@@ -63,6 +63,49 @@
   .animate-page-in {
     animation: page-in 280ms ease-out both;
   }
+
+  .animate-alerta-vencido {
+    animation: alerta-vencido 1.6s ease-in-out infinite;
+  }
+
+  .animate-alerta-proximo {
+    animation: alerta-proximo 1.6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-alerta-vencido,
+    .animate-alerta-proximo {
+      animation: none;
+    }
+  }
+}
+
+@keyframes alerta-vencido {
+  0%,
+  100% {
+    border-color: rgb(254 205 211);
+    background-color: rgb(255 241 242 / 0.4);
+    box-shadow: 0 0 0 0 rgb(244 63 94 / 0);
+  }
+  50% {
+    border-color: rgb(244 63 94);
+    background-color: rgb(255 228 230);
+    box-shadow: 0 0 0 4px rgb(244 63 94 / 0.35);
+  }
+}
+
+@keyframes alerta-proximo {
+  0%,
+  100% {
+    border-color: rgb(253 230 138);
+    background-color: rgb(255 251 235 / 0.6);
+    box-shadow: 0 0 0 0 rgb(255 202 26 / 0);
+  }
+  50% {
+    border-color: rgb(245 158 11);
+    background-color: rgb(254 249 195);
+    box-shadow: 0 0 0 4px rgb(255 202 26 / 0.45);
+  }
 }
 
 @keyframes page-in {

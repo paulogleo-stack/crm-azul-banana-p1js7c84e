@@ -1,4 +1,4 @@
-import { useState, type DragEvent } from 'react'
+import { useEffect, useState, type DragEvent } from 'react'
 import { CalendarClock, MessageCircleWarning } from 'lucide-react'
 import { CanalBadge, UrgencyBadge } from '@/components/CaseBadges'
 import { caseStatusOptions, formatDate } from '@/lib/crm'
@@ -22,10 +22,26 @@ const urgenciaRank: Record<Urgency, number> = {
 
 const horaEmMs = (valor: string) => new Date(valor).getTime()
 
+// Janela de aviso antes do prazo de retorno: 4 horas.
+const JANELA_PROXIMO_MS = 4 * 60 * 60 * 1000
+// Intervalo em que a condição de prazo é recalculada (1 minuto).
+const INTERVALO_RECALCULO_MS = 60 * 1000
+
+type AlertaPrazo = 'vencido' | 'proximo' | null
+
+// Piscando: prazo vencido ou a menos de 4h. Sem prazo ou já encerrado, não pisca.
+function alertaDePrazo(item: AtendimentoRecord, agora: number): AlertaPrazo {
+  if (!item.retorno_ate || item.status === 'encerrado') return null
+  const prazo = horaEmMs(item.retorno_ate)
+  if (Number.isNaN(prazo)) return null
+  if (prazo < agora) return 'vencido'
+  if (prazo - agora < JANELA_PROXIMO_MS) return 'proximo'
+  return null
+}
+
 // Prioridade decrescente: urgência maior primeiro; na mesma urgência,
 // o retorno mais próximo (ou já vencido) vem antes; sem prazo vai por último.
-function ordenarPorPrioridade(itens: AtendimentoRecord[]) {
-  const agora = Date.now()
+function ordenarPorPrioridade(itens: AtendimentoRecord[], agora: number) {
   return [...itens].sort((a, b) => {
     const diferencaUrgencia = urgenciaRank[a.urgencia] - urgenciaRank[b.urgencia]
     if (diferencaUrgencia !== 0) return diferencaUrgencia
@@ -41,13 +57,20 @@ function ordenarPorPrioridade(itens: AtendimentoRecord[]) {
   })
 }
 
-const estaVencido = (item: AtendimentoRecord) =>
-  Boolean(item.retorno_ate) && horaEmMs(item.retorno_ate) < Date.now()
+const estaVencido = (item: AtendimentoRecord, agora: number) =>
+  Boolean(item.retorno_ate) && horaEmMs(item.retorno_ate) < agora
 
 // Colunas na ordem do fluxo de atendimento: do início ao fim.
 export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKanbanBoardProps) {
   const [dragOver, setDragOver] = useState<CaseStatus | null>(null)
   const [draggingId, setDraggingId] = useState('')
+  const [agora, setAgora] = useState(() => Date.now())
+
+  // Recalcula periodicamente para que cartões entrem na janela de 4h sem recarregar.
+  useEffect(() => {
+    const id = window.setInterval(() => setAgora(Date.now()), INTERVALO_RECALCULO_MS)
+    return () => window.clearInterval(id)
+  }, [])
 
   const handleDrop = (event: DragEvent<HTMLDivElement>, status: CaseStatus) => {
     event.preventDefault()
@@ -62,7 +85,10 @@ export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKa
   return (
     <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5">
       {caseStatusOptions.map(([status, label]) => {
-        const items = ordenarPorPrioridade(atendimentos.filter((item) => item.status === status))
+        const items = ordenarPorPrioridade(
+          atendimentos.filter((item) => item.status === status),
+          agora,
+        )
         const isTarget = dragOver === status
         return (
           <div
@@ -93,7 +119,8 @@ export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKa
             <div className="flex min-h-40 flex-1 flex-col gap-3 p-3">
               {items.length ? (
                 items.map((item) => {
-                  const vencido = estaVencido(item)
+                  const vencido = estaVencido(item, agora)
+                  const piscando = alertaDePrazo(item, agora)
                   return (
                     <div
                       key={item.id}
@@ -120,6 +147,8 @@ export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKa
                       className={cn(
                         'cursor-grab rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-blue-200 hover:shadow-md active:cursor-grabbing',
                         vencido && 'border-rose-200 bg-rose-50/40',
+                        piscando === 'vencido' && 'animate-alerta-vencido',
+                        piscando === 'proximo' && 'animate-alerta-proximo',
                         draggingId === item.id && 'opacity-50',
                         busyId === item.id && 'opacity-60',
                       )}
@@ -143,11 +172,13 @@ export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKa
                         className={cn(
                           'mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500',
                           vencido && 'font-bold text-rose-600',
+                          !vencido && piscando === 'proximo' && 'font-bold text-amber-700',
                         )}
                       >
                         <CalendarClock className="h-3.5 w-3.5" />
                         Retorno: {formatDate(item.retorno_ate, true)}
                         {vencido && ' — vencido'}
+                        {!vencido && piscando === 'proximo' && ' — prazo em < 4h'}
                       </p>
                     </div>
                   )
