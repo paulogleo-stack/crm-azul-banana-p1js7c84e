@@ -12,6 +12,7 @@ import Handoff from '@/pages/Handoff'
 import Complaints from '@/pages/Complaints'
 import Schedule from '@/pages/Schedule'
 import Templates from '@/pages/Templates'
+import Diretriz from '@/pages/Diretriz'
 import NotFound from '@/pages/NotFound'
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
               <Route path="/reclamacoes" element={<Complaints />} />
               <Route path="/escala" element={<Schedule />} />
               <Route path="/modelos" element={<Templates />} />
+              <Route path="/diretriz" element={<Diretriz />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

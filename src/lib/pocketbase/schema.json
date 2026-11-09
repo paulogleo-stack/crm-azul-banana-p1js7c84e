@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-11-09T17:02:52.596Z",
+  "generatedAt": "2026-11-09T17:16:11.069Z",
   "collections": [
     {
       "name": "users",
       "type": "auth",
       "apiRules": {
-        "list": "id = @request.auth.id",
-        "view": "id = @request.auth.id",
-        "create": "",
-        "update": "id = @request.auth.id",
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.body.role = '' || @request.body.role = 'atendente'",
+        "update": "id = @request.auth.id && @request.body.role:changed = false",
         "delete": "id = @request.auth.id"
       },
       "fields": [
@@ -37,11 +37,390 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "role",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["atendente", "organizacao", "direcao"]
         }
       ],
       "indexes": [
         "CREATE UNIQUE INDEX `idx_tokenKey__pb_users_auth_` ON `users` (`tokenKey`)",
         "CREATE UNIQUE INDEX `idx_email__pb_users_auth_` ON `users` (`email`) WHERE `email` != ''"
+      ]
+    },
+    {
+      "name": "atendimentos",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')"
+      },
+      "fields": [
+        {
+          "name": "data_atendimento",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "cliente_nome",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "contato",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "motivo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "resumo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "status",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": [
+            "novo",
+            "em_atendimento",
+            "aguardando_cliente",
+            "aguardando_interno",
+            "resolvido",
+            "encerrado"
+          ]
+        },
+        {
+          "name": "proxima_acao",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "retorno_ate",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "urgencia",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["baixa", "media", "alta", "critica"]
+        },
+        {
+          "name": "responsavel",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "proxima_atendente",
+          "type": "relation",
+          "required": false,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "criado_por",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "reclamacao",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "reclamacao_status",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": [
+            "nao_encaminhada",
+            "encaminhada",
+            "em_analise",
+            "respondida",
+            "resolvida"
+          ]
+        },
+        {
+          "name": "reclamacao_detalhes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "direcao_resposta",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "encaminhado_em",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "handoff_pronto",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "handoff_observacoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_atendimentos_status ON atendimentos (status)",
+        "CREATE INDEX idx_atendimentos_urgencia ON atendimentos (urgencia)",
+        "CREATE INDEX idx_atendimentos_responsavel ON atendimentos (responsavel)",
+        "CREATE INDEX idx_atendimentos_reclamacao ON atendimentos (reclamacao)",
+        "CREATE INDEX idx_atendimentos_retorno ON atendimentos (retorno_ate)"
+      ]
+    },
+    {
+      "name": "handoffs",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')"
+      },
+      "fields": [
+        {
+          "name": "atendimento",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "atendimentos"
+        },
+        {
+          "name": "origem",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "destino",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "observacoes",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "pendencias",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "concluido",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "realizado_em",
+          "type": "date",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_handoffs_atendimento ON handoffs (atendimento)",
+        "CREATE INDEX idx_handoffs_destino ON handoffs (destino)"
+      ]
+    },
+    {
+      "name": "escala",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')"
+      },
+      "fields": [
+        {
+          "name": "dia_semana",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"]
+        },
+        {
+          "name": "ordem",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "turno",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["manha", "tarde", "noite"]
+        },
+        {
+          "name": "horario",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "responsavel",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "users"
+        },
+        {
+          "name": "cobertura",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "observacao",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": ["CREATE INDEX idx_escala_ordem_turno ON escala (ordem, turno)"]
+    },
+    {
+      "name": "modelos_mensagem",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')",
+        "update": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')",
+        "delete": "@request.auth.id != '' && (@request.auth.role = 'organizacao' || @request.auth.role = 'direcao')"
+      },
+      "fields": [
+        {
+          "name": "categoria",
+          "type": "select",
+          "required": true,
+          "system": false,
+          "selectValues": ["abertura", "verificacao", "confirmacao", "encerramento", "reclamacao"]
+        },
+        {
+          "name": "titulo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "conteudo",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "ordem",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_modelos_categoria ON modelos_mensagem (categoria)",
+        "CREATE INDEX idx_modelos_ordem ON modelos_mensagem (ordem)"
       ]
     }
   ]

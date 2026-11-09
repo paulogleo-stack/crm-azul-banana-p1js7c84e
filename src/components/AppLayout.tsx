@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
+  BookOpen,
   CalendarDays,
   ChevronRight,
   ClipboardCheck,
@@ -27,6 +28,7 @@ const navigation = [
   { label: 'Reclamações', to: '/reclamacoes', icon: MessageCircleWarning },
   { label: 'Escala', to: '/escala', icon: CalendarDays },
   { label: 'Modelos', to: '/modelos', icon: FileText },
+  { label: 'Diretriz', to: '/diretriz', icon: BookOpen },
 ]
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
