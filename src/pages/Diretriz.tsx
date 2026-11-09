@@ -48,7 +48,7 @@ export default function Diretriz() {
       <PageHeader
         eyebrow="Documento de referência"
         title="Diretriz de Atendimento"
-        description="A diretriz oficial do WhatsApp do Azul Banana, sempre à mão: leia aqui mesmo, sem sair do app."
+        description="A diretriz oficial de atendimento do Azul Banana, válida para WhatsApp e Instagram, sempre à mão: leia aqui mesmo, sem sair do app."
         action={
           <Button asChild variant="outline" className="rounded-xl">
             <a href={PDF_URL} target="_blank" rel="noopener noreferrer">

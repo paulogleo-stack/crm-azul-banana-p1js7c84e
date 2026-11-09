@@ -1,6 +1,6 @@
 import { ArrowRight, CalendarClock, MessageCircleWarning, UserRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { StatusBadge, UrgencyBadge } from '@/components/CaseBadges'
+import { CanalBadge, StatusBadge, UrgencyBadge } from '@/components/CaseBadges'
 import { formatDate } from '@/lib/crm'
 import type { AtendimentoRecord, UserRecord } from '@/types/crm'
 
@@ -29,6 +29,7 @@ export function CaseCard({ atendimento, users = [], onOpen, compact = false }: C
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={atendimento.status} />
             <UrgencyBadge urgency={atendimento.urgencia} />
+            <CanalBadge canal={atendimento.canal} />
             {atendimento.reclamacao && (
               <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-bold text-rose-700">
                 <MessageCircleWarning className="h-3 w-3" /> Reclamação

@@ -21,7 +21,10 @@ export default function Templates() {
   const copy = async (id: string, content: string) => {
     await navigator.clipboard.writeText(content)
     setCopied(id)
-    toast({ title: 'Mensagem copiada', description: 'Agora é só colar na conversa do WhatsApp.' })
+    toast({
+      title: 'Mensagem copiada',
+      description: 'Agora é só colar na conversa (WhatsApp ou Instagram).',
+    })
     window.setTimeout(() => setCopied(''), 1800)
   }
 
@@ -29,8 +32,8 @@ export default function Templates() {
     <div>
       <PageHeader
         eyebrow="Mensagens da casa"
-        title="Modelos para o WhatsApp"
-        description="Copie as mensagens da diretriz e personalize os trechos entre colchetes antes de enviar ao cliente."
+        title="Modelos de mensagem"
+        description="Copie as mensagens da diretriz para o WhatsApp ou o Instagram e personalize os trechos entre colchetes antes de enviar ao cliente."
       />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">

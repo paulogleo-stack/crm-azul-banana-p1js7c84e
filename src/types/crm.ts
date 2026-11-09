@@ -9,6 +9,7 @@ export type CaseStatus =
   | 'resolvido'
   | 'encerrado'
 export type Urgency = 'baixa' | 'media' | 'alta' | 'critica'
+export type Canal = 'WhatsApp' | 'Instagram'
 export type ComplaintStatus =
   | 'nao_encaminhada'
   | 'encaminhada'
@@ -32,6 +33,7 @@ export interface AtendimentoRecord extends RecordModel {
   proxima_acao: string
   retorno_ate: string
   urgencia: Urgency
+  canal: Canal
   responsavel: string
   proxima_atendente: string
   criado_por: string
@@ -87,6 +89,7 @@ export interface AtendimentoInput {
   proxima_acao: string
   retorno_ate: string
   urgencia: Urgency
+  canal: Canal
   responsavel: string
   proxima_atendente?: string
   reclamacao: boolean

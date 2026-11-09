@@ -26,7 +26,7 @@ import { CaseCard } from '@/components/CaseCard'
 import { LoadingScreen } from '@/components/LoadingScreen'
 import { useCrm } from '@/contexts/CrmContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { caseStatusOptions, urgencyOptions } from '@/lib/crm'
+import { canalOptions, caseStatusOptions, urgencyOptions } from '@/lib/crm'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [status, setStatus] = useState('todos')
   const [urgency, setUrgency] = useState('todas')
   const [responsible, setResponsible] = useState('todos')
+  const [canal, setCanal] = useState('todos')
 
   const stats = useMemo(() => {
     const open = atendimentos.filter((item) => !['resolvido', 'encerrado'].includes(item.status))
@@ -64,10 +65,11 @@ export default function Dashboard() {
         matchesSearch &&
         (status === 'todos' || item.status === status) &&
         (urgency === 'todas' || item.urgencia === urgency) &&
+        (canal === 'todos' || item.canal === canal) &&
         (responsible === 'todos' || item.responsavel === responsible)
       )
     })
-  }, [atendimentos, responsible, search, status, urgency])
+  }, [atendimentos, canal, responsible, search, status, urgency])
 
   if (loading && atendimentos.length === 0) return <LoadingScreen />
 
@@ -198,6 +200,19 @@ export default function Dashboard() {
                 {caseStatusOptions.map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={canal} onValueChange={setCanal}>
+              <SelectTrigger className="h-10 rounded-xl lg:w-40">
+                <SelectValue placeholder="Canal" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os canais</SelectItem>
+                {canalOptions.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {value}
                   </SelectItem>
                 ))}
               </SelectContent>

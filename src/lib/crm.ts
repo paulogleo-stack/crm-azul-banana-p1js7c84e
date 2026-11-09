@@ -1,4 +1,4 @@
-import type { CaseStatus, ComplaintStatus, Urgency, UserRole } from '@/types/crm'
+import type { Canal, CaseStatus, ComplaintStatus, Urgency, UserRole } from '@/types/crm'
 
 export const statusLabels: Record<CaseStatus, string> = {
   novo: 'Novo',
@@ -32,6 +32,7 @@ export const roleLabels: Record<UserRole, string> = {
 
 export const caseStatusOptions = Object.entries(statusLabels) as [CaseStatus, string][]
 export const urgencyOptions = Object.entries(urgencyLabels) as [Urgency, string][]
+export const canalOptions: Canal[] = ['WhatsApp', 'Instagram']
 export const complaintStatusOptions = Object.entries(complaintStatusLabels) as [
   ComplaintStatus,
   string,

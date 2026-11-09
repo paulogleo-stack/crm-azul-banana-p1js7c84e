@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { statusLabels, urgencyLabels } from '@/lib/crm'
-import type { CaseStatus, Urgency } from '@/types/crm'
+import type { Canal, CaseStatus, Urgency } from '@/types/crm'
 
 const statusStyles: Record<CaseStatus, string> = {
   novo: 'border-blue-200 bg-blue-50 text-blue-700',
@@ -43,6 +43,25 @@ export function UrgencyBadge({ urgency }: { urgency: Urgency }) {
       )}
     >
       {urgencyLabels[urgency]}
+    </Badge>
+  )
+}
+
+const canalStyles: Record<Canal, string> = {
+  WhatsApp: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  Instagram: 'border-pink-200 bg-pink-50 text-pink-700',
+}
+
+export function CanalBadge({ canal }: { canal: Canal }) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        'whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold',
+        canalStyles[canal],
+      )}
+    >
+      {canal}
     </Badge>
   )
 }

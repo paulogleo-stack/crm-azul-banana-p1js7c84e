@@ -17,9 +17,9 @@ import { PageHeader } from '@/components/PageHeader'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCrm } from '@/contexts/CrmContext'
 import { createAtendimento } from '@/services/atendimentos'
-import { caseStatusOptions, toDateTimeLocal, urgencyOptions } from '@/lib/crm'
+import { canalOptions, caseStatusOptions, toDateTimeLocal, urgencyOptions } from '@/lib/crm'
 import { useToast } from '@/hooks/use-toast'
-import type { AtendimentoInput, CaseStatus, Urgency } from '@/types/crm'
+import type { AtendimentoInput, Canal, CaseStatus, Urgency } from '@/types/crm'
 
 function initialForm(userId = ''): AtendimentoInput {
   return {
@@ -32,6 +32,7 @@ function initialForm(userId = ''): AtendimentoInput {
     proxima_acao: '',
     retorno_ate: '',
     urgencia: 'media',
+    canal: 'WhatsApp',
     responsavel: userId,
     proxima_atendente: '',
     reclamacao: false,
@@ -121,12 +122,30 @@ export default function NewCase() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact">WhatsApp / contato *</Label>
+                <Label>Canal *</Label>
+                <Select
+                  value={form.canal}
+                  onValueChange={(value) => update('canal', value as Canal)}
+                >
+                  <SelectTrigger className="h-11 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {canalOptions.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contact">Contato (telefone ou @usuário) *</Label>
                 <Input
                   id="contact"
                   value={form.contato}
                   onChange={(e) => update('contato', e.target.value)}
-                  placeholder="(00) 00000-0000"
+                  placeholder="(00) 00000-0000 ou @usuario"
                   className="h-11 rounded-xl"
                   required
                 />

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-09T17:16:11.069Z",
+  "generatedAt": "2026-11-09T17:23:37.057Z",
   "collections": [
     {
       "name": "users",
@@ -208,6 +208,13 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "canal",
+          "type": "select",
+          "required": false,
+          "system": false,
+          "selectValues": ["WhatsApp", "Instagram"]
         }
       ],
       "indexes": [

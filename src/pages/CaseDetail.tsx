@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/PageHeader'
-import { StatusBadge, UrgencyBadge } from '@/components/CaseBadges'
+import { CanalBadge, StatusBadge, UrgencyBadge } from '@/components/CaseBadges'
 import { useCrm } from '@/contexts/CrmContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { caseStatusOptions, complaintStatusLabels, formatDate, toDateTimeLocal } from '@/lib/crm'
@@ -162,6 +162,7 @@ export default function CaseDetail() {
     )
 
   const whatsapp = record.contato.replace(/\D/g, '')
+  const instagramHandle = record.contato.trim().replace(/^@/, '')
 
   return (
     <div>
@@ -179,6 +180,7 @@ export default function CaseDetail() {
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <StatusBadge status={record.status} />
         <UrgencyBadge urgency={record.urgencia} />
+        <CanalBadge canal={record.canal} />
         {record.reclamacao && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700">
             <MessageCircleWarning className="h-3.5 w-3.5" />{' '}
@@ -330,12 +332,25 @@ export default function CaseDetail() {
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-extrabold text-slate-900">Ações rápidas</h2>
             <div className="mt-4 space-y-2">
-              <Button variant="outline" className="h-11 w-full justify-start rounded-xl" asChild>
-                <a href={`https://wa.me/55${whatsapp}`} target="_blank" rel="noreferrer">
-                  <ExternalLink className="mr-2 h-4 w-4 text-emerald-600" /> Abrir conversa no
-                  WhatsApp
-                </a>
-              </Button>
+              {record.canal === 'Instagram' ? (
+                <Button variant="outline" className="h-11 w-full justify-start rounded-xl" asChild>
+                  <a
+                    href={`https://www.instagram.com/${instagramHandle}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4 text-pink-600" /> Abrir perfil no
+                    Instagram
+                  </a>
+                </Button>
+              ) : (
+                <Button variant="outline" className="h-11 w-full justify-start rounded-xl" asChild>
+                  <a href={`https://wa.me/55${whatsapp}`} target="_blank" rel="noreferrer">
+                    <ExternalLink className="mr-2 h-4 w-4 text-emerald-600" /> Abrir conversa no
+                    WhatsApp
+                  </a>
+                </Button>
+              )}
               <Button
                 variant="outline"
                 className="h-11 w-full justify-start rounded-xl"
