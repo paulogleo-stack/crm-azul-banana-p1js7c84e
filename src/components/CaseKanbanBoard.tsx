@@ -3,7 +3,7 @@ import { CalendarClock, MessageCircleWarning } from 'lucide-react'
 import { CanalBadge, UrgencyBadge } from '@/components/CaseBadges'
 import { caseStatusOptions, formatDate } from '@/lib/crm'
 import { cn } from '@/lib/utils'
-import type { AtendimentoRecord, CaseStatus } from '@/types/crm'
+import type { AtendimentoRecord, CaseStatus, Urgency } from '@/types/crm'
 
 interface CaseKanbanBoardProps {
   atendimentos: AtendimentoRecord[]
@@ -11,6 +11,38 @@ interface CaseKanbanBoardProps {
   onOpen: (atendimento: AtendimentoRecord) => void
   onMove: (atendimento: AtendimentoRecord, status: CaseStatus) => void
 }
+
+// Quanto menor o número, mais urgente: fica no topo da coluna.
+const urgenciaRank: Record<Urgency, number> = {
+  critica: 0,
+  alta: 1,
+  media: 2,
+  baixa: 3,
+}
+
+const horaEmMs = (valor: string) => new Date(valor).getTime()
+
+// Prioridade decrescente: urgência maior primeiro; na mesma urgência,
+// o retorno mais próximo (ou já vencido) vem antes; sem prazo vai por último.
+function ordenarPorPrioridade(itens: AtendimentoRecord[]) {
+  const agora = Date.now()
+  return [...itens].sort((a, b) => {
+    const diferencaUrgencia = urgenciaRank[a.urgencia] - urgenciaRank[b.urgencia]
+    if (diferencaUrgencia !== 0) return diferencaUrgencia
+
+    const prazoA = a.retorno_ate ? horaEmMs(a.retorno_ate) : Number.POSITIVE_INFINITY
+    const prazoB = b.retorno_ate ? horaEmMs(b.retorno_ate) : Number.POSITIVE_INFINITY
+
+    // Vencidos (prazo no passado) antes dos ainda no futuro.
+    if (prazoA <= agora && prazoB > agora) return -1
+    if (prazoB <= agora && prazoA > agora) return 1
+    if (prazoA === prazoB) return 0
+    return prazoA - prazoB
+  })
+}
+
+const estaVencido = (item: AtendimentoRecord) =>
+  Boolean(item.retorno_ate) && horaEmMs(item.retorno_ate) < Date.now()
 
 // Colunas na ordem do fluxo de atendimento: do início ao fim.
 export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKanbanBoardProps) {
@@ -30,7 +62,7 @@ export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKa
   return (
     <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-3 sm:-mx-5 sm:px-5">
       {caseStatusOptions.map(([status, label]) => {
-        const items = atendimentos.filter((item) => item.status === status)
+        const items = ordenarPorPrioridade(atendimentos.filter((item) => item.status === status))
         const isTarget = dragOver === status
         return (
           <div
@@ -60,56 +92,66 @@ export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKa
 
             <div className="flex min-h-40 flex-1 flex-col gap-3 p-3">
               {items.length ? (
-                items.map((item) => (
-                  <div
-                    key={item.id}
-                    draggable={!busyId}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`Abrir atendimento de ${item.cliente_nome}`}
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData('text/plain', item.id)
-                      event.dataTransfer.effectAllowed = 'move'
-                      setDraggingId(item.id)
-                    }}
-                    onDragEnd={() => {
-                      setDraggingId('')
-                      setDragOver(null)
-                    }}
-                    onClick={() => onOpen(item)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        onOpen(item)
-                      }
-                    }}
-                    className={cn(
-                      'cursor-grab rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-blue-200 hover:shadow-md active:cursor-grabbing',
-                      draggingId === item.id && 'opacity-50',
-                      busyId === item.id && 'opacity-60',
-                    )}
-                  >
-                    <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                      <UrgencyBadge urgency={item.urgencia} />
-                      <CanalBadge canal={item.canal} />
-                      {item.reclamacao && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-700">
-                          <MessageCircleWarning className="h-3 w-3" /> Reclamação
-                        </span>
+                items.map((item) => {
+                  const vencido = estaVencido(item)
+                  return (
+                    <div
+                      key={item.id}
+                      draggable={!busyId}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Abrir atendimento de ${item.cliente_nome}`}
+                      onDragStart={(event) => {
+                        event.dataTransfer.setData('text/plain', item.id)
+                        event.dataTransfer.effectAllowed = 'move'
+                        setDraggingId(item.id)
+                      }}
+                      onDragEnd={() => {
+                        setDraggingId('')
+                        setDragOver(null)
+                      }}
+                      onClick={() => onOpen(item)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          onOpen(item)
+                        }
+                      }}
+                      className={cn(
+                        'cursor-grab rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-blue-200 hover:shadow-md active:cursor-grabbing',
+                        vencido && 'border-rose-200 bg-rose-50/40',
+                        draggingId === item.id && 'opacity-50',
+                        busyId === item.id && 'opacity-60',
                       )}
+                    >
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                        <UrgencyBadge urgency={item.urgencia} />
+                        <CanalBadge canal={item.canal} />
+                        {item.reclamacao && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-700">
+                            <MessageCircleWarning className="h-3 w-3" /> Reclamação
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="truncate text-sm font-extrabold text-slate-900">
+                        {item.cliente_nome}
+                      </h4>
+                      <p className="mt-1 line-clamp-2 text-xs font-medium leading-relaxed text-slate-600">
+                        {item.motivo}
+                      </p>
+                      <p
+                        className={cn(
+                          'mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500',
+                          vencido && 'font-bold text-rose-600',
+                        )}
+                      >
+                        <CalendarClock className="h-3.5 w-3.5" />
+                        Retorno: {formatDate(item.retorno_ate, true)}
+                        {vencido && ' — vencido'}
+                      </p>
                     </div>
-                    <h4 className="truncate text-sm font-extrabold text-slate-900">
-                      {item.cliente_nome}
-                    </h4>
-                    <p className="mt-1 line-clamp-2 text-xs font-medium leading-relaxed text-slate-600">
-                      {item.motivo}
-                    </p>
-                    <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-                      <CalendarClock className="h-3.5 w-3.5" />
-                      Retorno: {formatDate(item.retorno_ate, true)}
-                    </p>
-                  </div>
-                ))
+                  )
+                })
               ) : (
                 <div className="grid flex-1 place-items-center rounded-xl border border-dashed border-slate-200 p-4 text-center text-xs font-medium text-slate-400">
                   Arraste um atendimento para cá
