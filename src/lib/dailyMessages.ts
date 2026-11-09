@@ -6,8 +6,9 @@
  * fechamento (slogan "Lugar de Gente Feliz" e tom de marca Azul Banana).
  * 10 aberturas x 10 núcleos x 10 fechamentos = 1000 combinações únicas.
  *
- * A escolha do dia é determinística: a mesma data produz a mesma mensagem para
- * toda a equipe, e a mensagem muda a cada dia.
+ * A escolha do dia é pseudoaleatória e estável: a data é a semente de um hash,
+ * então a mesma data produz a mesma mensagem para toda a equipe (e não muda a cada
+ * recarregamento), mas cada dia sorteia uma mensagem diferente da do dia anterior.
  */
 
 const aberturas = [
@@ -67,13 +68,35 @@ export function mensagemPorIndice(indice: number): string {
   return `${abertura} ${valor} ${fechamento}`
 }
 
-/** Índice do dia: permutação bijetiva de 0..999, então a mensagem nunca se repete antes de 1000 dias. */
-export function indiceDoDia(date: Date = new Date()): number {
-  const dia = dayNumber(date)
-  return (((dia % TOTAL_MENSAGENS) + TOTAL_MENSAGENS) * 567 + 123) % TOTAL_MENSAGENS
+/** Hash inteiro de 32 bits (avalanche de Murmur3) — gera o sorteio a partir do número do dia. */
+function hashDoDia(n: number): number {
+  let h = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b)
+  h ^= h >>> 13
+  h = Math.imul(h, 0xc2b2ae35)
+  h ^= h >>> 16
+  return h >>> 0
 }
 
-/** Mensagem inicial do dia — determinística por data, igual para toda a equipe. */
+/**
+ * Índice sorteado para o dia. Percorre os dias desde a época fixa, sorteando
+ * `hashDoDia(dia) % TOTAL` e pulando o índice do dia anterior quando coincidem.
+ * Assim o resultado é sempre o mesmo para uma data, e dias seguidos nunca repetem.
+ */
+export function indiceDoDia(date: Date = new Date()): number {
+  const diaAlvo = dayNumber(date)
+  let anterior: number | null = null
+  let atual = 0
+  for (let dia = Math.min(0, diaAlvo); dia <= diaAlvo; dia++) {
+    atual = hashDoDia(dia) % TOTAL_MENSAGENS
+    if (anterior !== null && atual === anterior) {
+      atual = (atual + 1) % TOTAL_MENSAGENS
+    }
+    anterior = atual
+  }
+  return atual
+}
+
+/** Mensagem inicial do dia — sorteada por data (estável no dia), igual para toda a equipe. */
 export function mensagemDoDia(date: Date = new Date()): string {
   return mensagemPorIndice(indiceDoDia(date))
 }
@@ -101,15 +124,23 @@ export function verificarBancoDeMensagens(): { total: number; distintas: number;
   return { total: todas.length, distintas, ok: todas.length === 1000 && distintas === 1000 }
 }
 
-/** Verificações de sanidade determinística: mesma data => mesma mensagem; datas vizinhas => mensagens diferentes. */
+/**
+ * Verificações do sorteio: mesma data => mesma mensagem no dia inteiro;
+ * dias seguidos (por um ano) => nunca a mesma mensagem; sorteio varia ao longo do tempo.
+ */
 export function verificarDeterminismo(): boolean {
-  const dia = new Date(2026, 5, 15, 23, 59)
-  const mesmoDiaTarde = new Date(2026, 5, 15, 8, 0)
-  const diaSeguinte = new Date(2026, 5, 16, 8, 0)
-  return (
-    mensagemDoDia(dia) === mensagemDoDia(mesmoDiaTarde) &&
-    mensagemDoDia(dia) !== mensagemDoDia(diaSeguinte)
-  )
+  const manha = new Date(2026, 5, 15, 8, 0)
+  const noite = new Date(2026, 5, 15, 23, 59)
+  if (mensagemDoDia(manha) !== mensagemDoDia(noite)) return false
+  let semRepeticaoSeguida = true
+  const distintasNoAno = new Set<number>()
+  for (let d = 0; d < 365; d++) {
+    const hoje = indiceDoDia(new Date(2026, 0, 1 + d))
+    const ontem = indiceDoDia(new Date(2026, 0, d))
+    if (d > 0 && hoje === ontem) semRepeticaoSeguida = false
+    distintasNoAno.add(hoje)
+  }
+  return semRepeticaoSeguida && distintasNoAno.size > 1
 }
 
 // Auto-verificação em desenvolvimento: garante o banco de 1000 variações distintas.

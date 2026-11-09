@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react'
 import { CalendarDays, Check, ClipboardCopy, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { mensagemDoDia, rotuloDoDia, TOTAL_MENSAGENS } from '@/lib/dailyMessages'
+import { mensagemDoDia, rotuloDoDia } from '@/lib/dailyMessages'
 
 /**
  * Cartão "Mensagem inicial do dia" do painel.
- * A mensagem é determinística por data: a mesma para toda a equipe no mesmo dia.
+ * A mensagem é sorteada por data: a mesma para toda a equipe no mesmo dia e diferente a cada dia.
  */
 export function DailyMessage() {
   const { toast } = useToast()
@@ -46,9 +46,6 @@ export function DailyMessage() {
           </p>
           <p className="text-xs font-medium capitalize text-blue-200">{rotulo}</p>
         </div>
-        <span className="ml-auto hidden rounded-full border border-blue-700 bg-blue-900/60 px-3 py-1 text-[10px] font-bold text-blue-200 sm:block">
-          1 de {TOTAL_MENSAGENS.toLocaleString('pt-BR')} variações
-        </span>
       </div>
 
       <p className="mt-4 text-sm font-medium leading-relaxed text-blue-50 sm:text-[15px]">
