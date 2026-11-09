@@ -1,8 +1,9 @@
 /**
  * Mensagem inicial do dia — banco combinatório de 1000 variações distintas.
  *
- * Cada mensagem é composta por: abertura (mote Cacho Forte) + núcleo (um valor
- * da diretriz de atendimento) + fechamento (tom de marca Azul Banana).
+ * Cada mensagem é composta por: abertura (mote Cacho Forte, como um cacho de banana:
+ * um segura o outro) + núcleo (um valor de hospitalidade do bar e restaurante) +
+ * fechamento (slogan "Lugar de Gente Feliz" e tom de marca Azul Banana).
  * 10 aberturas x 10 núcleos x 10 fechamentos = 1000 combinações únicas.
  *
  * A escolha do dia é determinística: a mesma data produz a mesma mensagem para
@@ -10,41 +11,41 @@
  */
 
 const aberturas = [
-  'Bom dia, equipe! Hoje acordamos com energia de Cacho Forte: forte, saudável e cheio de vida.',
-  'Olá, time Azul Banana! O Cacho Forte é o nosso mote: cada cliente sai daqui com o cabelo e o coração mais fortes.',
-  'Bom dia! Como diz o lema da casa, o compromisso é Cacho Forte — e um atendimento à altura.',
-  'Bom dia, gente boa! Antes das primeiras mensagens, respira: o nosso mote é Cacho Forte, e ele começa no jeito de atender.',
-  'Bom dia, equipe! Cacho Forte não é só cabelo: é a força com que a gente recebe cada cliente.',
-  'Olá, time! Mais um dia para cuidar de cachos e de pessoas — com a leveza e a força do Cacho Forte.',
-  'Bom dia! O café está pronto, as mensagens vão chegar e o nosso Cacho Forte já está no modo atendimento.',
-  'Bom dia, equipe Azul Banana! Lembre do nosso lema: Cacho Forte, cliente feliz, equipe orgulhosa.',
-  'Olá, pessoal! Comece o dia se olhando no espelho: hoje também é dia de Cacho Forte para quem atende.',
-  'Bom dia! Cada conversa de hoje é uma chance de provar que o Cacho Forte mora dentro do nosso atendimento.',
+  'Bom dia, equipe! Hoje seguimos o nosso Cacho Forte: como as bananas de um cacho, cada um segura o outro.',
+  'Olá, time Azul Banana! Somos um cacho: ficamos fortes porque ninguém fica sozinho, e cada banana sustenta a outra.',
+  'Bom dia! Na hospitalidade da casa, o Cacho Forte começa na recepção: a mesa acolhe e o time sustenta.',
+  'Bom dia, gente boa! Respira e lembra: como num cacho de banana, a força do Azul Banana está em ficar junto.',
+  'Bom dia, equipe! Cacho Forte é isso: cada pessoa do time segura a outra, e o cliente sente essa união.',
+  'Olá, pessoal! Antes do primeiro “oi”, pense na recepção do nosso bar e restaurante: um cacho forte acolhe bem.',
+  'Bom dia! O salão está se preparando, as mensagens estão chegando, e o nosso Cacho Forte já está de porta aberta.',
+  'Bom dia, equipe Azul Banana! Lembrete do dia: Cacho Forte é time unido, e lugar de gente feliz começa no atendimento.',
+  'Olá, time! Como um cacho de banana, a gente só fica forte quando está junto, principalmente no atendimento.',
+  'Bom dia! Cada conversa de hoje é uma chance de fazer o cliente sentir a hospitalidade do Azul Banana.',
 ]
 
 const valores = [
-  'Antes de responder, acolha: um “oi” caloroso muda o dia da pessoa do outro lado da tela.',
-  'Agilidade é cuidado: responda rápido e com clareza, sem deixar o cliente esperando no vácuo.',
-  'Nenhuma conversa se perde por aqui: registre tudo no CRM para que o próximo passo esteja sempre à mão.',
-  'Na passagem de turno, entregue contexto: quem chega precisa saber onde a conversa parou para continuar de onde você saiu.',
-  'O atendimento é pelo WhatsApp ou pelo Instagram — os dois canais merecem o mesmo carinho e a mesma atenção.',
-  'Regra de ouro da casa: reclamação que chega até você e não se resolve é encaminhada com contexto à Direção, com o Paulo Gabriel.',
-  'Acolher é escutar primeiro: entenda o que o cliente quer antes de sugerir o que ele precisa.',
-  'O que está no CRM não se perde: anote cada combinado para que nenhum cliente precise repetir a história.',
-  'Responda no tempo do cliente, não no seu: um retorno rápido e honesto vale mais que uma resposta perfeita que atrasa.',
-  'Se algo der errado, não esconda: a Direção quer saber — encaminhe a reclamação e mantenha o cliente informado até o fim.',
+  'Acolher à mesa começa na primeira mensagem: um “oi” caloroso faz o cliente sentir que chegou num lugar especial.',
+  'Recepção é cuidado: responda com agilidade e clareza, sem deixar ninguém esperando no vácuo.',
+  'Nenhum cliente pode ficar sem resposta: registre tudo no CRM para que o próximo passo esteja sempre à mão.',
+  'Na passagem de turno, entregue o contexto: quem chega precisa saber onde a conversa parou para continuar a recepção.',
+  'O atendimento acontece pelo WhatsApp ou pelo Instagram, e os dois canais recebem a mesma hospitalidade da casa.',
+  'Regra de ouro da casa: reclamação que não se resolve vai com contexto à Direção, com o Paulo Gabriel.',
+  'Hospitalidade é escutar primeiro: entenda o que o cliente quer antes de sugerir o que ele precisa.',
+  'Tudo que combinamos fica no CRM, para que nenhum cliente precise repetir a história ao voltar à casa.',
+  'Responda no tempo do cliente: um retorno rápido e honesto vale mais que uma resposta perfeita que atrasa.',
+  'Se algo der errado, não esconda: encaminhe a reclamação à Direção e mantenha o cliente informado até o fim.',
 ]
 
 const fechamentos = [
-  'Bom trabalho hoje, equipe! Juntas e juntos, a gente faz o dia ser mais azul (de Azul Banana) e mais amarelo (de alegria)!',
-  'Vamos com tudo: forte como o cacho, doce como a banana, atentos como sempre.',
-  'Que hoje cada “bom dia” enviado vire um cliente mais feliz. Bora, time!',
-  'Capricha no acolhimento, confia no time e o dia flui. Boa jornada!',
-  'Lembre-se: por trás de cada mensagem há uma pessoa. Atenda como você gostaria de ser atendido.',
-  'Estamos juntas nessa: qualquer dúvida, chame o time. Ninguém atende sozinho por aqui.',
-  'Faça do turno de hoje o melhor atendimento da semana. Você consegue!',
-  'Organize a aba do CRM, dê o primeiro passo e o resto do dia vem. Você consegue!',
-  'Cliente bem tratado volta e indica. Que hoje a gente colha muitos “obrigado”.',
+  'Bom trabalho hoje, equipe! Lugar de Gente Feliz se faz assim: um cuidando do outro, como um cacho.',
+  'Vamos com tudo: forte como o cacho, doce como a banana, acolhedores como sempre.',
+  'Que hoje cada “bom dia” enviado vire um cliente feliz que volta à mesa. Bora, time!',
+  'Capricha no acolhimento, confia no time e o turno flui. Lugar de Gente Feliz começa com você.',
+  'Lembre: por trás de cada mensagem há uma pessoa. Atenda como você gostaria de ser recebido.',
+  'Estamos juntos nessa: qualquer dúvida, chame o time. Ninguém atende sozinho no Azul Banana.',
+  'Faça do turno de hoje a melhor recepção da semana. Você consegue!',
+  'Organize o CRM, dê o primeiro passo e o resto do dia vem. Lugar de Gente Feliz, sempre.',
+  'Cliente bem recebido volta e indica. Que hoje a gente colha muitos “obrigado”.',
   'Com carinho, rapidez e contexto: é assim que o Azul Banana abre e fecha mais um dia de portas abertas.',
 ]
 
