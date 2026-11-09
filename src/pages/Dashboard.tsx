@@ -22,17 +22,21 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/PageHeader'
-import { CaseCard } from '@/components/CaseCard'
+import { CaseKanbanBoard } from '@/components/CaseKanbanBoard'
 import { DailyMessage } from '@/components/DailyMessage'
 import { LoadingScreen } from '@/components/LoadingScreen'
 import { useCrm } from '@/contexts/CrmContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { canalOptions, caseStatusOptions, urgencyOptions } from '@/lib/crm'
+import { updateAtendimento } from '@/services/atendimentos'
+import { toast } from '@/hooks/use-toast'
+import { canalOptions, caseStatusOptions, statusLabels, urgencyOptions } from '@/lib/crm'
+import type { AtendimentoRecord, CaseStatus } from '@/types/crm'
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { atendimentos, equipe, loading, error } = useCrm()
+  const { atendimentos, equipe, loading, error, replaceAtendimento } = useCrm()
+  const [busyId, setBusyId] = useState('')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('todos')
   const [urgency, setUrgency] = useState('todas')
@@ -73,6 +77,27 @@ export default function Dashboard() {
   }, [atendimentos, canal, responsible, search, status, urgency])
 
   if (loading && atendimentos.length === 0) return <LoadingScreen />
+
+  // Arrastar um cartão muda só o status; os demais campos não são alterados.
+  const moveAtendimento = async (item: AtendimentoRecord, nextStatus: CaseStatus) => {
+    setBusyId(item.id)
+    try {
+      const updated = await updateAtendimento(item.id, { status: nextStatus })
+      replaceAtendimento(updated)
+      toast({
+        title: 'Status atualizado',
+        description: `${item.cliente_nome} agora está em "${statusLabels[nextStatus]}".`,
+      })
+    } catch {
+      toast({
+        title: 'Não foi possível mover o atendimento',
+        description: 'Tente novamente em instantes.',
+        variant: 'destructive',
+      })
+    } finally {
+      setBusyId('')
+    }
+  }
 
   return (
     <div>
@@ -249,25 +274,16 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {filtered.length ? (
-          <div className="grid gap-3 xl:grid-cols-2">
-            {filtered.map((item) => (
-              <CaseCard
-                key={item.id}
-                atendimento={item}
-                users={equipe}
-                onOpen={() => navigate(`/atendimentos/${item.id}`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid min-h-56 place-items-center rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-8 text-center">
-            <div>
-              <Search className="mx-auto mb-3 h-7 w-7 text-slate-300" />
-              <p className="font-bold text-slate-700">Nenhum caso encontrado</p>
-              <p className="mt-1 text-sm text-slate-500">Ajuste os filtros para ampliar a busca.</p>
-            </div>
-          </div>
+        <CaseKanbanBoard
+          atendimentos={filtered}
+          busyId={busyId}
+          onOpen={(item) => navigate(`/atendimentos/${item.id}`)}
+          onMove={moveAtendimento}
+        />
+        {!filtered.length && (
+          <p className="mt-4 text-center text-sm font-medium text-slate-500">
+            Nenhum caso encontrado com estes filtros. Ajuste os filtros para ampliar a busca.
+          </p>
         )}
       </section>
     </div>
