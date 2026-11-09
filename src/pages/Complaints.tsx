@@ -25,6 +25,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { complaintStatusLabels, complaintStatusOptions, formatDate } from '@/lib/crm'
 import { updateComplaint } from '@/services/atendimentos'
 import { useToast } from '@/hooks/use-toast'
+import { useAgora } from '@/hooks/use-agora'
+import { urgenciaEfetiva } from '@/lib/urgencia'
 import type { ComplaintStatus } from '@/types/crm'
 
 export default function Complaints() {
@@ -32,6 +34,7 @@ export default function Complaints() {
   const { user } = useAuth()
   const { atendimentos, replaceAtendimento } = useCrm()
   const { toast } = useToast()
+  const agora = useAgora()
   const complaints = useMemo(() => atendimentos.filter((item) => item.reclamacao), [atendimentos])
   const [filter, setFilter] = useState('todas')
   const filtered =
@@ -74,7 +77,7 @@ export default function Complaints() {
     ['encaminhada', 'em_analise'].includes(item.reclamacao_status),
   ).length
   const critical = complaints.filter(
-    (item) => item.urgencia === 'critica' && item.reclamacao_status !== 'resolvida',
+    (item) => urgenciaEfetiva(item, agora) === 'critica' && item.reclamacao_status !== 'resolvida',
   ).length
   const resolved = complaints.filter((item) => item.reclamacao_status === 'resolvida').length
 

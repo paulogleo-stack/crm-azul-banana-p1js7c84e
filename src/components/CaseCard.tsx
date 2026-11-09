@@ -2,6 +2,8 @@ import { ArrowRight, CalendarClock, MessageCircleWarning, UserRound } from 'luci
 import { Button } from '@/components/ui/button'
 import { CanalBadge, StatusBadge, UrgencyBadge } from '@/components/CaseBadges'
 import { formatDate } from '@/lib/crm'
+import { urgenciaEfetiva } from '@/lib/urgencia'
+import { useAgora } from '@/hooks/use-agora'
 import type { AtendimentoRecord, UserRecord } from '@/types/crm'
 
 interface CaseCardProps {
@@ -12,6 +14,7 @@ interface CaseCardProps {
 }
 
 export function CaseCard({ atendimento, users = [], onOpen, compact = false }: CaseCardProps) {
+  const agora = useAgora()
   const responsible =
     atendimento.expand?.responsavel ?? users.find((user) => user.id === atendimento.responsavel)
   const deadline = atendimento.retorno_ate
@@ -28,7 +31,7 @@ export function CaseCard({ atendimento, users = [], onOpen, compact = false }: C
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={atendimento.status} />
-            <UrgencyBadge urgency={atendimento.urgencia} />
+            <UrgencyBadge urgency={urgenciaEfetiva(atendimento, agora)} />
             <CanalBadge canal={atendimento.canal} />
             {atendimento.reclamacao && (
               <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-bold text-rose-700">

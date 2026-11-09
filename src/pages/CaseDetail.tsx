@@ -40,6 +40,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { caseStatusOptions, complaintStatusLabels, formatDate, toDateTimeLocal } from '@/lib/crm'
 import { forwardComplaint, getAtendimento, updateAtendimento } from '@/services/atendimentos'
 import { useToast } from '@/hooks/use-toast'
+import { useAgora } from '@/hooks/use-agora'
+import { urgenciaEfetiva } from '@/lib/urgencia'
 import type { AtendimentoRecord, CaseStatus } from '@/types/crm'
 
 export default function CaseDetail() {
@@ -58,6 +60,7 @@ export default function CaseDetail() {
   const [deadline, setDeadline] = useState(toDateTimeLocal(record?.retorno_ate || ''))
   const [complaintOpen, setComplaintOpen] = useState(false)
   const [complaintDetails, setComplaintDetails] = useState(record?.reclamacao_detalhes || '')
+  const agora = useAgora()
 
   useEffect(() => {
     const cached = atendimentos.find((item) => item.id === id)
@@ -179,7 +182,7 @@ export default function CaseDetail() {
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <StatusBadge status={record.status} />
-        <UrgencyBadge urgency={record.urgencia} />
+        <UrgencyBadge urgency={urgenciaEfetiva(record, agora)} />
         <CanalBadge canal={record.canal} />
         {record.reclamacao && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700">

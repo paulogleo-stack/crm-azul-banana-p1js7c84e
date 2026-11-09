@@ -29,6 +29,8 @@ import { useCrm } from '@/contexts/CrmContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { updateAtendimento } from '@/services/atendimentos'
 import { toast } from '@/hooks/use-toast'
+import { useAgora } from '@/hooks/use-agora'
+import { urgenciaEfetiva } from '@/lib/urgencia'
 import { canalOptions, caseStatusOptions, statusLabels, urgencyOptions } from '@/lib/crm'
 import type { AtendimentoRecord, CaseStatus } from '@/types/crm'
 
@@ -42,21 +44,22 @@ export default function Dashboard() {
   const [urgency, setUrgency] = useState('todas')
   const [responsible, setResponsible] = useState('todos')
   const [canal, setCanal] = useState('todos')
+  const agora = useAgora()
 
   const stats = useMemo(() => {
     const open = atendimentos.filter((item) => !['resolvido', 'encerrado'].includes(item.status))
     const overdue = open.filter(
-      (item) =>
-        item.retorno_ate && new Date(item.retorno_ate.replace(' ', 'T')).getTime() < Date.now(),
+      (item) => item.retorno_ate && new Date(item.retorno_ate.replace(' ', 'T')).getTime() < agora,
     )
     return {
       open: open.length,
       mine: open.filter((item) => item.responsavel === user?.id).length,
-      urgent: open.filter((item) => ['alta', 'critica'].includes(item.urgencia)).length,
+      urgent: open.filter((item) => ['alta', 'critica'].includes(urgenciaEfetiva(item, agora)))
+        .length,
       overdue: overdue.length,
       resolved: atendimentos.filter((item) => item.status === 'resolvido').length,
     }
-  }, [atendimentos, user?.id])
+  }, [atendimentos, user?.id, agora])
 
   const filtered = useMemo(() => {
     const normalized = search.toLowerCase().trim()
@@ -69,12 +72,12 @@ export default function Dashboard() {
       return (
         matchesSearch &&
         (status === 'todos' || item.status === status) &&
-        (urgency === 'todas' || item.urgencia === urgency) &&
+        (urgency === 'todas' || urgenciaEfetiva(item, agora) === urgency) &&
         (canal === 'todos' || item.canal === canal) &&
         (responsible === 'todos' || item.responsavel === responsible)
       )
     })
-  }, [atendimentos, canal, responsible, search, status, urgency])
+  }, [atendimentos, canal, responsible, search, status, urgency, agora])
 
   if (loading && atendimentos.length === 0) return <LoadingScreen />
 

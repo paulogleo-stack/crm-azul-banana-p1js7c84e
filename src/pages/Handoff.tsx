@@ -17,11 +17,14 @@ import { useCrm } from '@/contexts/CrmContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { completeHandoff } from '@/services/atendimentos'
 import { formatDate } from '@/lib/crm'
+import { urgenciaEfetiva } from '@/lib/urgencia'
+import { useAgora } from '@/hooks/use-agora'
 import { useToast } from '@/hooks/use-toast'
 
 export default function Handoff() {
   const { user } = useAuth()
   const { atendimentos, equipe, refresh } = useCrm()
+  const agora = useAgora()
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -139,7 +142,7 @@ export default function Handoff() {
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <StatusBadge status={item.status} />
-                    <UrgencyBadge urgency={item.urgencia} />
+                    <UrgencyBadge urgency={urgenciaEfetiva(item, agora)} />
                     <span className="ml-auto text-[11px] font-semibold text-slate-500">
                       {responsible?.name}
                     </span>

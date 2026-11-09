@@ -1,7 +1,9 @@
-import { useEffect, useState, type DragEvent } from 'react'
+import { useState, type DragEvent } from 'react'
 import { CalendarClock, MessageCircleWarning } from 'lucide-react'
 import { CanalBadge, UrgencyBadge } from '@/components/CaseBadges'
 import { caseStatusOptions, formatDate } from '@/lib/crm'
+import { JANELA_PROXIMO_MS, urgenciaEfetiva } from '@/lib/urgencia'
+import { useAgora } from '@/hooks/use-agora'
 import { cn } from '@/lib/utils'
 import type { AtendimentoRecord, CaseStatus, Urgency } from '@/types/crm'
 
@@ -22,11 +24,6 @@ const urgenciaRank: Record<Urgency, number> = {
 
 const horaEmMs = (valor: string) => new Date(valor).getTime()
 
-// Janela de aviso antes do prazo de retorno: 4 horas.
-const JANELA_PROXIMO_MS = 4 * 60 * 60 * 1000
-// Intervalo em que a condição de prazo é recalculada (1 minuto).
-const INTERVALO_RECALCULO_MS = 60 * 1000
-
 type AlertaPrazo = 'vencido' | 'proximo' | null
 
 // Piscando: prazo vencido ou a menos de 4h. Sem prazo ou já encerrado, não pisca.
@@ -43,7 +40,8 @@ function alertaDePrazo(item: AtendimentoRecord, agora: number): AlertaPrazo {
 // o retorno mais próximo (ou já vencido) vem antes; sem prazo vai por último.
 function ordenarPorPrioridade(itens: AtendimentoRecord[], agora: number) {
   return [...itens].sort((a, b) => {
-    const diferencaUrgencia = urgenciaRank[a.urgencia] - urgenciaRank[b.urgencia]
+    const diferencaUrgencia =
+      urgenciaRank[urgenciaEfetiva(a, agora)] - urgenciaRank[urgenciaEfetiva(b, agora)]
     if (diferencaUrgencia !== 0) return diferencaUrgencia
 
     const prazoA = a.retorno_ate ? horaEmMs(a.retorno_ate) : Number.POSITIVE_INFINITY
@@ -64,13 +62,8 @@ const estaVencido = (item: AtendimentoRecord, agora: number) =>
 export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKanbanBoardProps) {
   const [dragOver, setDragOver] = useState<CaseStatus | null>(null)
   const [draggingId, setDraggingId] = useState('')
-  const [agora, setAgora] = useState(() => Date.now())
-
-  // Recalcula periodicamente para que cartões entrem na janela de 4h sem recarregar.
-  useEffect(() => {
-    const id = window.setInterval(() => setAgora(Date.now()), INTERVALO_RECALCULO_MS)
-    return () => window.clearInterval(id)
-  }, [])
+  // Recalculado a cada minuto: cartões entram na janela de 4h sem recarregar.
+  const agora = useAgora()
 
   const handleDrop = (event: DragEvent<HTMLDivElement>, status: CaseStatus) => {
     event.preventDefault()
@@ -154,7 +147,7 @@ export function CaseKanbanBoard({ atendimentos, busyId, onOpen, onMove }: CaseKa
                       )}
                     >
                       <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                        <UrgencyBadge urgency={item.urgencia} />
+                        <UrgencyBadge urgency={urgenciaEfetiva(item, agora)} />
                         <CanalBadge canal={item.canal} />
                         {item.reclamacao && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-bold text-rose-700">
